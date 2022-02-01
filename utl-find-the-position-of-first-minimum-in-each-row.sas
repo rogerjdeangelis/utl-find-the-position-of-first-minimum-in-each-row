@@ -1,4 +1,4 @@
-%let pgm=utl-find-the-position-of-first-minimum-in-each-row;
+F%let pgm=utl-find-the-position-of-first-minimum-in-each-row;
 
 Find the position of first minimum in each row
 
@@ -7,7 +7,12 @@ Find the position of first minimum in each row
         1. SAS
         2. R (could easily do in Python with SQLite - Same solution in SA/R/Python Cleaner than base R/Python)
            SQLite solution is much easier to understand and it produces dataframes.
-
+        3. Array Looping
+           Bartosz Jablonski
+           yabwon@gmail.com
+        4. Very elegant 'which' solution
+           data _null_,
+           datanull@gmail.com
 
 Github
 https://tinyurl.com/57pcx3p2
@@ -168,6 +173,67 @@ parmcards4;
 
 proc print data=sd1.want_r;
 run;quit;
+
+
+/*____    ____             _
+|___ /   | __ )  __ _ _ __| |_
+  |_ \   |  _ \ / _` | `__| __|
+ ___) |  | |_) | (_| | |  | |_
+|____(_) |____/ \__,_|_|   \__|
+
+*/
+Bartosz Jablonski via listserv.uga.edu
+Jan 31, 2022, 2:29 PM (16 hours ago)
+to SAS-L
+
+Roger,
+
+Why waste I/Os on transpose?
+Finding minimum on notsorted data is always O(n), so "regular" array scan seems to be doing the job.
+
+Bart
+
+data have;
+  input rec x1-x5;
+cards4;
+1 9 1 6 1 8
+2 9 8 7 6 1
+3 1 1 3 4 5
+;;;;
+run;
+
+data want;
+  set have;
+  array A[*] x:;
+
+  first.min = A[1];
+  j = 1;
+  do i = 2 to dim(A); drop i j;
+    if A[i] < first.min then
+      do;
+        j = i;
+        first.min = A[i];
+      end;
+  end;
+  MIN1ST = catx(" - ", first.min, vname(A[j]));
+run;
+
+/*  _          _       _                    _ _
+| || |      __| | __ _| |_ __ _ _ __  _   _| | |
+| || |_    / _` |/ _` | __/ _` | `_ \| | | | | |
+|__   _|  | (_| | (_| | || (_| | | | | |_| | | |
+   |_|(_)  \__,_|\__,_|\__\__,_|_| |_|\__,_|_|_|
+
+*/
+
+
+data want;
+   set have;
+   array A[*] x:;
+   first.min = min(of a[*]);
+   index = whichn(first.min,of a[*]);
+   MIN1ST = catx(" - ", first.min, vname(A[index]));
+   run;
 
 /*___    _
 |  _ \  | | ___   __ _
